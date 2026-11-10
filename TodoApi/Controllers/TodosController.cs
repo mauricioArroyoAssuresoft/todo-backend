@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using TodoApi.Models;
+using TodoApi.Services;
 
 namespace TodoApi.Controllers
 {
@@ -14,10 +15,13 @@ namespace TodoApi.Controllers
       new TodoItem("learn rest apis") {Id = 2}
     };
     private readonly ILogger<TodosController> _logger;
+    private readonly ITodoRepository _todoRepository;
 
-    public TodosController(ILogger<TodosController> logger)
+
+    public TodosController(ILogger<TodosController> logger, ITodoRepository todoRepository)
     {
       _logger = logger;
+      _todoRepository = todoRepository;
     }
 
     [HttpGet("status")]
@@ -30,7 +34,8 @@ namespace TodoApi.Controllers
     [HttpGet]
     public ActionResult<IEnumerable<TodoItem>> GetAll()
     {
-      return Ok(Todos);
+      var allTodos = _todoRepository.GetAll();
+      return Ok(allTodos);
     }
 
     [HttpGet("{id:int}")]
