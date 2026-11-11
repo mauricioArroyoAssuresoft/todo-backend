@@ -18,7 +18,9 @@ namespace TodoApi.Controllers
     [HttpGet]
     public IActionResult GetIssuer()
     {
-      return Ok(new { Issuer = _jwtSettings.Issuer, ExpiryMinutes = _jwtSettings.ExpiryInMinutes });
+      var value = new { Issuer = _jwtSettings.Issuer, ExpiryMinutes = _jwtSettings.ExpiryInMinutes };
+      return Ok(value);
+      // return Ok(new { Issuer = _jwtSettings.Issuer, ExpiryMinutes = _jwtSettings.ExpiryInMinutes });
     }
   }
 }
