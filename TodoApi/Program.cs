@@ -1,8 +1,11 @@
+using TodoApi.Configuration;
 using TodoApi.Middleware;
 using TodoApi.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -18,7 +21,6 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 app.UseRouting();
-app.MapControllers();
 app.Use(async (context, next) =>
 {
     Console.WriteLine($"CONSOLE LOGGERR: entering inline middlware");
@@ -29,4 +31,5 @@ app.Use(async (context, next) =>
     Console.WriteLine("CONSOLE LOGGERR: leaving inline middlware");
 });
 app.UseMiddleware<ApiKeyValidationMiddleware>();
+app.MapControllers();
 app.Run();
