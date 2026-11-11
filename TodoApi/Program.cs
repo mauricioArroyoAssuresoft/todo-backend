@@ -21,10 +21,12 @@ app.UseRouting();
 app.MapControllers();
 app.Use(async (context, next) =>
 {
+    Console.WriteLine($"CONSOLE LOGGERR: entering inline middlware");
     var stopwatch = System.Diagnostics.Stopwatch.StartNew();
     await next();
     stopwatch.Stop();
-    Console.WriteLine($"[Middleware] {context.Request.Method} {context.Request.Path} executed in {stopwatch.ElapsedMilliseconds} ms");
+    Console.WriteLine($"CONSOLE LOGGERR: [Middleware] {context.Request.Method} {context.Request.Path} executed in {stopwatch.ElapsedMilliseconds} ms");
+    Console.WriteLine("CONSOLE LOGGERR: leaving inline middlware");
 });
 app.UseMiddleware<ApiKeyValidationMiddleware>();
 app.Run();
