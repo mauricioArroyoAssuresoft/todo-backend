@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TodoApi.Data;
 using TodoApi.Models;
 using TodoApi.Services;
 
@@ -16,12 +18,14 @@ namespace TodoApi.Controllers
     };
     private readonly ILogger<TodosController> _logger;
     private readonly ITodoRepository _todoRepository;
+    private readonly TodoDbContext _context;
 
 
-    public TodosController(ILogger<TodosController> logger, ITodoRepository todoRepository)
+    public TodosController(ILogger<TodosController> logger, ITodoRepository todoRepository, TodoDbContext context)
     {
       _logger = logger;
       _todoRepository = todoRepository;
+      _context = context;
     }
 
     [HttpGet("status")]
@@ -36,6 +40,13 @@ namespace TodoApi.Controllers
     {
       var allTodos = _todoRepository.GetAll();
       return Ok(allTodos);
+    }
+
+    [HttpGet("db")]
+    public async Task<ActionResult<IEnumerable<TodoItem>>> GetAllFromDb()
+    {
+      var todosFromDb = await _context.Todos.ToListAsync();
+      return Ok(todosFromDb);
     }
 
     [HttpGet("{id:int}")]
@@ -62,6 +73,15 @@ namespace TodoApi.Controllers
       newTodo.Id = Todos.Count + 1;
       Todos.Add(newTodo);
       return CreatedAtAction(nameof(GetById), new { id = newTodo.Id }, newTodo);
+    }
+
+    [HttpPost("db")]
+    public async Task<ActionResult<TodoItem>> CreateInDb(TodoItem todo)
+    {
+      _context.Todos.Add(todo);
+      await _context.SaveChangesAsync();
+
+      return CreatedAtAction(nameof(GetAllFromDb), new { id = todo.Id }, todo);
     }
 
     [HttpPut("{id:int}")]
