@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
-
 namespace TodoApi.Models
 {
   public class TodoItem
@@ -8,6 +6,7 @@ namespace TodoApi.Models
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsCompleted { get; set; } = false;
+    public DateTime StartDate { get; set; } = DateTime.UtcNow;
     public DateTime? DueDate { get; set; }
     public PriorityLevel Priority { get; set; } = PriorityLevel.Medium;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
