@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Data;
+using TodoApi.DTOs;
 using TodoApi.Models;
 using TodoApi.Services;
 
@@ -19,7 +20,6 @@ namespace TodoApi.Controllers
     private readonly ILogger<TodosController> _logger;
     private readonly ITodoRepository _todoRepository;
     private readonly TodoDbContext _context;
-
 
     public TodosController(ILogger<TodosController> logger, ITodoRepository todoRepository, TodoDbContext context)
     {
@@ -43,10 +43,11 @@ namespace TodoApi.Controllers
     }
 
     [HttpGet("db")]
-    public async Task<ActionResult<IEnumerable<TodoItem>>> GetAllFromDb()
+    public async Task<ActionResult<IEnumerable<TodoResponseDto>>> GetAllFromDb()
     {
       var todosFromDb = await _context.Todos.ToListAsync();
-      return Ok(todosFromDb);
+      var todosDtos = todosFromDb.Select(todo => new TodoResponseDto(todo.Id, todo.Title, todo.Description, todo.IsCompleted, (int)todo.Priority));
+      return Ok(todosDtos);
     }
 
     [HttpGet("{id:int}")]
@@ -109,5 +110,37 @@ namespace TodoApi.Controllers
       Todos.Remove(todo);
       return NoContent();
     }
+
+    [HttpGet("pending")]
+    public async Task<ActionResult<IEnumerable<TodoItem>>> GetPendingTodos()
+    {
+      var pendingTodos = await _context.Todos
+        .Where(todo => !todo.IsCompleted)
+        .OrderByDescending(todo => todo.Priority)
+        .ToListAsync();
+
+      return Ok(pendingTodos);
+    }
+
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<TodoItem>>> Search([FromQuery] string keyword)
+    {
+      var results = await _context.Todos
+        .Where(todos => todos.Title.Contains(keyword))
+        .AsNoTracking()
+        .ToListAsync();
+
+      return Ok(results);
+    }
+
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetStats()
+    {
+      var total = await _context.Todos.CountAsync();
+      var completed = await _context.Todos.CountAsync(todo => todo.IsCompleted);
+
+      return Ok(new { Total = total, Completed = completed, Remaining = total - completed });
+    }
+
   }
 }
