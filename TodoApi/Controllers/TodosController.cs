@@ -77,12 +77,20 @@ namespace TodoApi.Controllers
     }
 
     [HttpPost("db")]
-    public async Task<ActionResult<TodoItem>> CreateInDb(TodoItem todo)
+    public async Task<ActionResult<TodoResponseDto>> CreateInDb(CreateTodoDto dtoTodo)
     {
-      _context.Todos.Add(todo);
+      var entity = new TodoItem
+      {
+        Title = dtoTodo.Title,
+        Description = dtoTodo.Description,
+        Priority = (PriorityLevel)dtoTodo.Priority,
+        IsCompleted = false
+      };
+      _context.Todos.Add(entity);
       await _context.SaveChangesAsync();
 
-      return CreatedAtAction(nameof(GetAllFromDb), new { id = todo.Id }, todo);
+      var responseTodo = new TodoResponseDto(entity.Id, entity.Title, entity.Description, entity.IsCompleted, (int) entity.Priority);
+      return CreatedAtAction(nameof(GetAllFromDb), new { id = responseTodo.Id }, responseTodo);
     }
 
     [HttpPut("{id:int}")]
