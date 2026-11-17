@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.DTOs;
@@ -8,6 +9,7 @@ namespace TodoApi.Controllers
 {
   [ApiController]
   [Route("api/[controller]")]
+  [Authorize]
   public class TodosController : ControllerBase
   {
     private readonly ILogger<TodosController> _logger;
@@ -59,7 +61,7 @@ namespace TodoApi.Controllers
         IsCompleted = false
       };
       var created = await _todoRepository.CreateAsync(entity);
-      var responseDto = new TodoResponseDto(created.Id, created.Title, created.Description, created.IsCompleted, (int) created.Priority);
+      var responseDto = new TodoResponseDto(created.Id, created.Title, created.Description, created.IsCompleted, (int)created.Priority);
 
       return CreatedAtAction(nameof(GetById), new { id = responseDto.Id }, responseDto);
 
@@ -139,5 +141,17 @@ namespace TodoApi.Controllers
     //   return Ok(new { Total = total, Completed = completed, Remaining = total - completed });
     // }
 
+    [HttpGet("profile")]
+    public IActionResult GetUserProfile()
+    {
+      return Ok(new { User = User.Identity?.Name });
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
+    public IActionResult Delete(int id)
+    {
+      return NoContent();
+    }
   }
 }
