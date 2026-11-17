@@ -3,8 +3,6 @@ using TodoApi.Configuration;
 using TodoApi.Data;
 using TodoApi.Middleware;
 using TodoApi.Services;
-
-
 var builder = WebApplication.CreateBuilder(args);
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
