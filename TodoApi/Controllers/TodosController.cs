@@ -8,24 +8,19 @@ namespace TodoApi.Controllers
 {
   [ApiController]
   [Route("api/[controller]")]
-  [Authorize]
+  // [Authorize]
   public class TodosController : ControllerBase
   {
-    private readonly ILogger<TodosController> _logger;
     private readonly ITodoRepository _todoRepository;
-    // private readonly TodoDbContext _context;
+    private readonly ILogger<TodosController> _logger;
 
-    public TodosController(ILogger<TodosController> logger, ITodoRepository todoRepository)
+    public TodosController(
+      ITodoRepository todoRepository,
+      ILogger<TodosController> logger
+    )
     {
-      _logger = logger;
       _todoRepository = todoRepository;
-    }
-
-    [HttpGet("status")]
-    public ActionResult GetStatus()
-    {
-      _logger.LogInformation("LOGGER: checking api health status");
-      return Ok(new { status = "asp.net core web api is running" });
+      _logger = logger;
     }
 
     [HttpGet]
@@ -40,9 +35,11 @@ namespace TodoApi.Controllers
     [HttpGet("{id:int}")]
     public async Task<ActionResult<TodoItem>> GetById(int id)
     {
+      _logger.LogInformation("fetching todo item with ID {id}", id);
       var todo = await _todoRepository.GetByIdAsync(id);
       if (todo is null)
       {
+        _logger.LogWarning("todo item with ID {id} was not found", id);
         return NotFound(new { message = $"todo item with id {id} not found" });
       }
 
@@ -65,23 +62,6 @@ namespace TodoApi.Controllers
       return CreatedAtAction(nameof(GetById), new { id = responseDto.Id }, responseDto);
 
     }
-
-    // [HttpPost("db")]
-    // public async Task<ActionResult<TodoResponseDto>> CreateInDb(CreateTodoDto dtoTodo)
-    // {
-    //   var entity = new TodoItem
-    //   {
-    //     Title = dtoTodo.Title,
-    //     Description = dtoTodo.Description,
-    //     Priority = (PriorityLevel)dtoTodo.Priority,
-    //     IsCompleted = false
-    //   };
-    //   _context.Todos.Add(entity);
-    //   await _context.SaveChangesAsync();
-
-    //   var responseTodo = new TodoResponseDto(entity.Id, entity.Title, entity.Description, entity.IsCompleted, (int)entity.Priority);
-    //   return CreatedAtAction(nameof(GetAllFromDb), new { id = responseTodo.Id }, responseTodo);
-    // }3333333333
 
     // [HttpPut("{id:int}")]
     // public IActionResult Update(int id, [FromBody] TodoItem updatedTodo)
@@ -140,6 +120,14 @@ namespace TodoApi.Controllers
     //   return Ok(new { Total = total, Completed = completed, Remaining = total - completed });
     // }
 
+    [HttpGet("status")]
+    public ActionResult GetStatus()
+    {
+      _logger.LogInformation("LOGGER: checking api health status");
+      return Ok(new { status = "asp.net core web api is running" });
+    }
+
+
     [HttpGet("profile")]
     public IActionResult GetUserProfile()
     {
@@ -152,5 +140,12 @@ namespace TodoApi.Controllers
     {
       return NoContent();
     }
+
+    [HttpGet("crash-test")]
+    public IActionResult CrashTest()
+    {
+      throw new InvalidOperationException("simulated databse failure!");
+    }
+
   }
 }
