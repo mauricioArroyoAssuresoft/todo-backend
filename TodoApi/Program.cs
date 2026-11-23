@@ -1,7 +1,6 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using Scalar.AspNetCore;
 using TodoApi.Configuration;
 using TodoApi.Data;
 using TodoApi.Middleware;
@@ -29,16 +28,43 @@ builder.Services.AddDbContext<TodoDbContext>(options =>
 {
     options.UseSqlite(connectionString);
 });
-builder.Services.AddOpenApi();
+// builder.Services.AddOpenApi();
 builder.Services.AddControllers();
-builder.Services.AddScoped<ITodoRepository, TodoRepository>();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Todo Management API",
+        Version = "v1",
+        Description = "REST API for managing tasks with JWT Authentication"
+    });
 
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter your JWT token (without 'Bearer ' prefix)."
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+    });
+});
+builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    // app.MapOpenApi();
+    app.MapScalarApiReference();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 app.UseHttpsRedirection();
 app.UseRouting();
@@ -52,7 +78,7 @@ app.Use(async (context, next) =>
     Console.WriteLine($"CONSOLE LOGGERR: [Middleware] {context.Request.Method} {context.Request.Path} executed in {stopwatch.ElapsedMilliseconds} ms");
     Console.WriteLine("CONSOLE LOGGERR: leaving inline middlware");
 });
-app.UseMiddleware<ApiKeyValidationMiddleware>();
+// app.UseMiddleware<ApiKeyValidationMiddleware>();
 // app.UseAuthentication();
 // app.UseAuthorization();
 app.MapControllers();

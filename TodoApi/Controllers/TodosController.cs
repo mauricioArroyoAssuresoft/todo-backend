@@ -8,6 +8,7 @@ namespace TodoApi.Controllers
 {
   [ApiController]
   [Route("api/[controller]")]
+  [Produces("applicaion/json")]
   // [Authorize]
   public class TodosController : ControllerBase
   {
@@ -33,6 +34,9 @@ namespace TodoApi.Controllers
     }
 
     [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(TodoResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<TodoItem>> GetById(int id)
     {
       _logger.LogInformation("fetching todo item with ID {id}", id);
