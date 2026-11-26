@@ -1,4 +1,6 @@
-namespace TodoApi.Models
+using TodoApi.Models;
+
+namespace TodoApi.Domain.Entities
 {
   public class TodoItem
   {
@@ -21,6 +23,11 @@ namespace TodoApi.Models
 
     public TodoItem(string title, PriorityLevel priority = PriorityLevel.Medium)
     {
+      if (string.IsNullOrWhiteSpace(title))
+      {
+        throw new ArgumentException("Title cannot be empty");
+      }
+
       Title = title;
       Priority = priority;
       CreatedAt = DateTime.UtcNow;
