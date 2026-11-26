@@ -10,6 +10,9 @@ namespace TodoApi.Models
     public DateTime? DueDate { get; set; }
     public PriorityLevel Priority { get; set; } = PriorityLevel.Medium;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public int? UserId { get; set; }
+    public User? User { get; set; }
+
 
     public TodoItem()
     {
@@ -33,10 +36,6 @@ namespace TodoApi.Models
       return DateTime.UtcNow > DueDate.Value;
     }
 
-    // public void MarķAsComplete()
-    // {
-    //   IsCompleted = true;
-    // }
     public void MarkAsComplete() => IsCompleted = true;
   }
 }
